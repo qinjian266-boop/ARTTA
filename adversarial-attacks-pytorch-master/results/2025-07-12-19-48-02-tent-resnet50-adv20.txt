@@ -1,0 +1,85 @@
+2025-07-12 19:48:02,838 WARNING : 局部对比度窗口大小建议使用奇数
+2025-07-12 19:48:02,845 INFO    : 当前配置:
+2025-07-12 19:48:02,845 INFO    :   clean_data: ./Imagenet-C
+2025-07-12 19:48:02,845 INFO    :   adv_data: ./ImageNet-C-FGSM-adv-level5
+2025-07-12 19:48:02,845 INFO    :   output: ./results
+2025-07-12 19:48:02,845 INFO    :   method: tent
+2025-07-12 19:48:02,845 INFO    :   model: resnet50
+2025-07-12 19:48:02,845 INFO    :   use_adv: True
+2025-07-12 19:48:02,845 INFO    :   adv_ratio: 0.2
+2025-07-12 19:48:02,845 INFO    :   adv_detection:
+2025-07-12 19:48:02,846 INFO    :     enabled: True
+2025-07-12 19:48:02,846 INFO    :     window_size: 20
+2025-07-12 19:48:02,846 INFO    :     feature_weights: [0, 0, 0, 1]
+2025-07-12 19:48:02,846 INFO    :     threshold_method: std
+2025-07-12 19:48:02,846 INFO    :     quantile: 0.8
+2025-07-12 19:48:02,846 INFO    :     std_factor: 0.9
+2025-07-12 19:48:02,846 INFO    :     expert_config:
+2025-07-12 19:48:02,846 INFO    :       enabled: False
+2025-07-12 19:48:02,846 INFO    :       method: gradient
+2025-07-12 19:48:02,846 INFO    :       use_layered_detection: True
+2025-07-12 19:48:02,846 INFO    :       num_layers: 2
+2025-07-12 19:48:02,846 INFO    :       high_score_strategy: any
+2025-07-12 19:48:02,846 INFO    :       high_score_confidence: 0.05
+2025-07-12 19:48:02,846 INFO    :       low_score_strategy: all
+2025-07-12 19:48:02,846 INFO    :       low_score_confidence: 0.3
+2025-07-12 19:48:02,846 INFO    :       use_adaptive_threshold: True
+2025-07-12 19:48:02,846 INFO    :       adaptive_factor: 0.15
+2025-07-12 19:48:02,846 INFO    :       gray_zone_midpoint_shift: 0.08
+2025-07-12 19:48:02,846 INFO    :       normalize_gradient_features: True
+2025-07-12 19:48:02,846 INFO    :       grad_norm_threshold: 0.75
+2025-07-12 19:48:02,846 INFO    :       grad_direction_threshold: 0.8
+2025-07-12 19:48:02,847 INFO    :       threshold_method: quantile
+2025-07-12 19:48:02,847 INFO    :     batch_stats:
+2025-07-12 19:48:02,847 INFO    :       print_freq: 1
+2025-07-12 19:48:02,847 INFO    :       save_features: False
+2025-07-12 19:48:02,847 INFO    :     min_clean_samples: 1
+2025-07-12 19:48:02,847 INFO    :   sample_filtering:
+2025-07-12 19:48:02,847 INFO    :     enabled: True
+2025-07-12 19:48:02,847 INFO    :   purification:
+2025-07-12 19:48:02,847 INFO    :     enable: False
+2025-07-12 19:48:02,847 INFO    :     method: guided_diffusion
+2025-07-12 19:48:02,847 INFO    :     device: cuda
+2025-07-12 19:48:02,847 INFO    :     model_path: ./pretrained_models/256x256_diffusion_uncond.pt
+2025-07-12 19:48:02,847 INFO    :     model_config:
+2025-07-12 19:48:02,847 INFO    :       image_size: 256
+2025-07-12 19:48:02,847 INFO    :       num_channels: 256
+2025-07-12 19:48:02,847 INFO    :       num_res_blocks: 2
+2025-07-12 19:48:02,847 INFO    :       num_heads: 4
+2025-07-12 19:48:02,847 INFO    :       num_head_channels: 64
+2025-07-12 19:48:02,847 INFO    :       attention_resolutions: 32,16,8
+2025-07-12 19:48:02,847 INFO    :       channel_mult: 1,1,2,2,4,4
+2025-07-12 19:48:02,847 INFO    :       dropout: 0.0
+2025-07-12 19:48:02,847 INFO    :       class_cond: False
+2025-07-12 19:48:02,847 INFO    :       diffusion_steps: 1000
+2025-07-12 19:48:02,847 INFO    :       noise_schedule: linear
+2025-07-12 19:48:02,847 INFO    :       timestep_respacing: ddim50
+2025-07-12 19:48:02,848 INFO    :       learn_sigma: True
+2025-07-12 19:48:02,848 INFO    :       use_checkpoint: False
+2025-07-12 19:48:02,848 INFO    :       use_scale_shift_norm: True
+2025-07-12 19:48:02,848 INFO    :       resblock_updown: True
+2025-07-12 19:48:02,848 INFO    :       use_fp16: True
+2025-07-12 19:48:02,848 INFO    :     purification_config:
+2025-07-12 19:48:02,848 INFO    :       t_start: 50
+2025-07-12 19:48:02,848 INFO    :       sample_steps: 1
+2025-07-12 19:48:02,848 INFO    :       noise_level: 0.01
+2025-07-12 19:48:02,848 INFO    :       eta: 0.0
+2025-07-12 19:48:02,848 INFO    :       add_noise: False
+2025-07-12 19:48:02,848 INFO    :   seed: 2025
+2025-07-12 19:48:02,848 INFO    :   gpu: 0
+2025-07-12 19:48:02,848 INFO    :   workers: 4
+2025-07-12 19:48:02,848 INFO    :   test_batch_size: 100
+2025-07-12 19:48:02,848 INFO    :   print_freq: 1
+2025-07-12 19:48:02,848 INFO    :   tta_iterations: 5
+2025-07-12 19:48:02,848 INFO    :   sar_margin_e0: 2.072326583694641
+2025-07-12 19:48:02,848 INFO    :   fisher_size: 2000
+2025-07-12 19:48:02,848 INFO    :   fisher_alpha: 2000.0
+2025-07-12 19:48:02,848 INFO    :   e_margin: 2.763102111592855
+2025-07-12 19:48:02,848 INFO    :   d_margin: 0.05
+2025-07-12 19:48:02,848 INFO    :   medbn:
+2025-07-12 19:48:02,848 INFO    :     enable: False
+2025-07-12 19:48:02,848 INFO    :     prior: 0.8
+2025-07-12 19:48:02,849 INFO    : 使用GPU: 0
+2025-07-12 19:48:02,852 INFO    : 加载普通测试数据从: ./Imagenet-C
+2025-07-12 19:48:02,852 INFO    : 加载对抗样本数据从: ./ImageNet-C-FGSM-adv-level5
+2025-07-12 19:48:02,853 ERROR   : 普通数据路径不存在: ./Imagenet-C
