@@ -52,6 +52,58 @@ Official PyTorch implementation of **ARTTA**.
 
 
 
+## 🚀 Dataset Preparation
+
+Please download the datasets and organize them as follows. The folder names and structures are set to match the default `CONFIG` in the scripts.
+
+### 1. Official Download Links
+
+- **CIFAR-100-C:** [Zenodo Link](https://zenodo.org/record/3555552)
+- **ImageNet-C:** [Zenodo Link](https://www.google.com/search?q=https://zenodo.org/record/2235181)
+
+### 2. Directory Structure
+
+Ensure your root directory has a `data/` or `datasets/` folder organized like this:
+
+#### **For CIFAR-100-C Experiments**
+
+The script `test_CIFAR100-c.py` expects the following path: `./data/CIFAR-100-C/`
+
+Plaintext
+
+```
+./data/
+└── CIFAR-100-C/             <-- Matches 'cifar100c_root'
+    ├── labels.npy
+    ├── gaussian_noise.npy
+    ├── shot_noise.npy
+    └── ... (other corruption files)
+```
+
+#### **For ImageNet-C Experiments**
+
+The script expects paths categorized by corruption and severity:
+
+Plaintext
+
+```
+./datasets/
+└── imagenet-c/
+    └── gaussian_noise/
+        └── 3/               <-- Default severity level
+            ├── [class_folders]
+            └── ... 
+```
+
+### 3. Quick Check (Code Configuration)
+
+If you place the files elsewhere, remember to update the `CONFIG` dictionary in your Python scripts:
+
+- **CIFAR-100-C Path:** `config['cifar100c_root']`
+- **Adversarial Data Path:** `config['adv_data']` (e.g., `./data/CIFAR-100-C-Adv/`)
+
+
+
 ## ⚙️ Configuration & Usage
 
 To replicate our results or conduct new experiments, you only need to modify the `CONFIG` dictionary in `main.py`. This centralized configuration controls everything from dataset paths to defensive hyperparameters.
@@ -120,18 +172,7 @@ To achieve the best defensive performance under different attack ratios, we sugg
 
 
 
-## 📊 Dataset Preparation
-
-Please download **ImageNet-C** or **CIFAR-100-C** and place them in the following directory:
-
-Plaintext
-
-```
-./data/ImageNet-C/
-./data/CIFAR100-c/
-```
-
-
+## 
 
 ## 📜 License
 
