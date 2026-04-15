@@ -59,7 +59,7 @@ Please download the datasets and organize them as follows. The folder names and 
 ### 1. Official Download Links
 
 - **CIFAR-100-C:** [Zenodo Link](https://zenodo.org/record/3555552)
-- **ImageNet-C:** [Zenodo Link](https://www.google.com/search?q=https://zenodo.org/record/2235181)
+- **ImageNet-C:** [Zenodo Link](https://zenodo.org/records/2235448)
 
 ### 2. Directory Structure
 
