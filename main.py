@@ -1324,7 +1324,6 @@ def evaluate(test_loader, model, model_orig_for_features, config, logger):
         std_factor=adv_filter_config.get('std_factor', 1.0),
         weights=adv_filter_config.get('feature_weights', [0.25] * 4),
         logger=logger,
-        expert_config=adv_filter_config.get('expert_config'),
         device=torch.device(f"cuda:{config['gpu']}") if config['gpu'] is not None and torch.cuda.is_available() else torch.device('cpu'),
 
     )
@@ -1334,7 +1333,7 @@ def evaluate(test_loader, model, model_orig_for_features, config, logger):
     for batch_idx, (images, targets, original_is_adv) in enumerate(test_loader):
         try:
             logger.info(f"\n{'=' * 80}")
-            logger.info(f"批次 {batch_idx + 1}/{len(test_loader)}")
+            logger.info(f"Batch {batch_idx + 1}/{len(test_loader)}")
             logger.info(f"{'=' * 80}")
 
             if config['gpu'] is not None:
