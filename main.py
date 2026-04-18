@@ -1687,24 +1687,6 @@ def evaluate(test_loader, model, model_orig_for_features, config, logger):
             logger.error(traceback.format_exc())
             continue
 
-    # Final results
-    logger.info(f"\nFinal Classification Results - Method: {config['method']}, Model: {config['model']}")
-    logger.info(f"Final benign sample average performance:")
-    logger.info(f"  - Accuracy: {clean_top1.avg:.2f}%")
-    logger.info(f"  - Error Rate (ER): {er_metric.avg:.2f}%")
-    logger.info(f"  - AUROC: {auroc_meter.avg:.2f}")
-    logger.info(f"  - FPR@TPR95: {fpr_at_tpr95_meter.avg:.2f}")
-
-    
-        
-    # Adversarial detection summary
-    if config['adv_detection']['enabled'] and (config['use_adv'] or config['dia_attack']['enabled']):
-        if hasattr(adv_filterer, 'log_detection_summary'):
-            adv_filterer.log_detection_summary()
-
-        else:
-            logger.warning("adv_filterer has no log_detection_summary(); skipping detection stats.")
-
     # Feature distribution visualization
     
     logger.info("\nAnalyzing adversarial/benign feature distributions...")
