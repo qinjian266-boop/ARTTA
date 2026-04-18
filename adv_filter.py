@@ -174,7 +174,7 @@ class AdvFilter:
         # Directional Similarity (Cosine)
         grad_directions = F.normalize(input_grads.view(input_grads.size(0), -1), p=2, dim=1)
         cosine_sim = torch.mm(grad_directions, grad_directions.t())
-        direction_scores = torch.mean(cosine_sim, dim=1)  # 平均余弦相似度
+        direction_scores = torch.mean(cosine_sim, dim=1)  
         
         # Gradient Angle Diversity
         batch_size = grad_directions.size(0)
@@ -317,7 +317,7 @@ class AdvFilter:
             self.logger.info("No samples processed; summary unavailable.")
             return
 
-        # 计算和打印基本指标
+        
         precision = self.total_tp / (self.total_tp + self.total_fp) if (self.total_tp + self.total_fp) > 0 else 0
         recall = self.total_tp / (self.total_tp + self.total_fn) if (self.total_tp + self.total_fn) > 0 else 0
         f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
@@ -428,7 +428,7 @@ class AdvFilter:
         s_gdir = compute_stats(gdir[benign_mask], gdir[adv_mask])
         s_msp  = compute_stats(mspec[benign_mask], mspec[adv_mask])
 
-        # 保存统计文本 (保持不变)
+        
         stats_path = os.path.join(output_dir, 'feature_distribution_stats.txt')
         with open(stats_path, 'w') as f:
             f.write("Feature distribution statistics (benign vs adversarial)\n\n")
@@ -544,7 +544,7 @@ class AdvFilter:
                 fig_pred.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0.02)
                 saved_paths[f'pred_entropy_{fmt}'] = out_path
             except Exception as e:
-                self.logger.error(f"保存 {out_path} 失败: {e}")
+                self.logger.error(f"Failed to save {out_path}: {e}")
         plt.close(fig_pred)
 
 
@@ -562,7 +562,7 @@ class AdvFilter:
                 fig_gdir.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0.02)
                 saved_paths[f'grad_dir_entropy_{fmt}'] = out_path
             except Exception as e:
-                self.logger.error(f"保存 {out_path} 失败: {e}")
+                self.logger.error(f"Failed to save {out_path}: {e}")
         plt.close(fig_gdir)
 
         fig_msp, ax_msp = plt.subplots(1, 1, figsize=fig_size)
@@ -585,82 +585,3 @@ class AdvFilter:
         return saved_paths
     
     
-
-# 简单使用示例
-if __name__ == "__main__":
-    """Minimal test for AdvFilter."""
-    test_logger = logging.getLogger(__name__ + "_test_adv_filter") # Changed name to be more specific
-    test_logger.setLevel(logging.INFO)
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    handler.setFormatter(formatter)
-    if not test_logger.hasHandlers(): 
-        test_logger.addHandler(handler)
-    test_logger.propagate = False
-
-
-    images = torch.randn(20, 3, 32, 32) 
-    targets = torch.randint(0, 10, (20,))
-    is_adv = torch.zeros(20, dtype=torch.bool)
-    is_adv[::2] = True
-    
-    class DummyModel(nn.Module):
-        def __init__(self):
-            super().__init__()
-            # 模拟一个简化的ResNet结构，以便于现有代码运行
-            self.conv1 = nn.Conv2d(3, 16, 3, padding=1)
-            self.bn1 = nn.BatchNorm2d(16)
-            self.relu = nn.ReLU()
-            self.maxpool = nn.MaxPool2d(2) # 32 -> 16
-            self.layer1 = nn.Identity()
-            self.layer2 = nn.Identity()
-            self.layer3 = nn.Identity()
-            self.layer4 = nn.Identity()
-            self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-            self.fc = nn.Linear(16, 10)
-
-        def forward(self, x):
-            # 定义一个完整的forward，使其可以被挤压分数函数直接调用
-            x = self.conv1(x)
-            x = self.bn1(x)
-            x = self.relu(x)
-            x = self.maxpool(x)
-            x = self.layer1(x)
-            x = self.layer2(x)
-            x = self.layer3(x)
-            x = self.layer4(x)
-            x = self.avgpool(x)
-            x = torch.flatten(x, 1)
-            return self.fc(x)
-
-    dummy_model = DummyModel()
-    
-    dummy_config = {
-        'adv_detection': {
-            'batch_stats': {'print_freq': 1},
-        }
-    }
-
-
-    filter_instance = AdvFilter(
-        logger=test_logger, 
-        window_size=20, 
-        threshold_method='std', 
-        quantile_val=0.8, 
-        std_factor=1.0, 
-        weights=[0.25, 0.25, 0.25, 0.25],
-    )
-
-    
-    dataset = TensorDataset(images, targets, is_adv)
-    loader = DataLoader(dataset, batch_size=10)
-
-    for batch_idx, (batch_images, batch_targets, batch_is_adv) in enumerate(loader):
-        filtered_images, mask, scores, final_detected_as_adv = filter_instance.filter_batch(
-            batch_images, batch_targets, batch_is_adv, 
-            dummy_config, dummy_model, dummy_model, test_logger, batch_idx
-        )
-        test_logger.info(f"Batch {batch_idx+1} processed.")
-    
-    filter_instance.log_detection_summary()
-
