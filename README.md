@@ -31,24 +31,29 @@ Official PyTorch implementation of **ARTTA**.
 - `sotta_utils/`: Implementation of the SoTTA baseline method and its supporting utilities.
 - `CIFAR100-c/`: Contains scripts for fine-tuning and evaluating on the **CIFAR-100-C** corruption benchmark. Includes training, testing, and robustness check utilities.
 
-## 🛠️ Installation
 
-1. **Create Environment**:
+## 🛠️ Environment & Installation
 
-   Bash
+- **Python:** 3.8
+- **Core:** PyTorch 2.0.1 + CUDA 11.8
+- **Hardware:** 24GB VRAM recommended for full replication (ResNet-101/ViT).
 
-   ```
-   conda create -n artta python=3.8 -y
-   conda activate artta
-   ```
+**Create Environment:**
 
-2. **Install Dependencies**:
+Bash
 
-   Bash
+```
+conda create -n artta python=3.8 -y
+conda activate artta
+```
 
-   ```
-   pip install -r requirements.txt
-   ```
+**Install Dependencies:**
+
+Bash
+
+```
+pip install -r requirements.txt
+```
 
 
 
