@@ -36,7 +36,7 @@ Official PyTorch implementation of **ARTTA**.
 
 - **Python:** 3.8
 - **Core:** PyTorch 2.0.1 + CUDA 11.8
-- **Hardware:** 24GB VRAM recommended for full replication (ResNet-101/ViT).
+- **Hardware:** 24GB VRAM recommended for full replication.
 
 **Create Environment:**
 
