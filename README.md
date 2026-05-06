@@ -173,9 +173,7 @@ Depending on the experiment setup, the code reports metrics such as:
 
 If you add custom logging or save directories in `main.py`, make sure the output path exists or is created before evaluation.
 
-## 📚 Citation
 
-If you use this repository in academic work, please cite the corresponding paper. A BibTeX entry can be added here once the paper metadata is finalized.
 
 ## 📜 License
 
