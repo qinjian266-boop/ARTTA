@@ -1687,18 +1687,6 @@ def evaluate(test_loader, model, model_orig_for_features, config, logger):
             logger.error(traceback.format_exc())
             continue
 
-    # Feature distribution visualization
-    
-    logger.info("\nAnalyzing adversarial/benign feature distributions...")
-
-    try:
-        adv_filterer.output_dir = config.get('output', 'results')
-        adv_filterer.plot_feature_distributions(output_dir=config.get('output', 'results'))
-    except AttributeError:
-        logger.warning("plot_feature_distributions() not found; skipping visualization.")
-    except Exception as e:
-        logger.error(f"Error plotting feature distributions: {e}")
-
     return clean_top1.avg, er_metric.avg, auroc_meter.avg, fpr_at_tpr95_meter.avg, adv_filterer, dia_attacker
 
 
@@ -1889,7 +1877,7 @@ def main():
             else:
                 logger.warning("adv_filterer does not have log_detection_summary(), skipping detection stats.")
 
-        # 保存最终结果到文件
+
         results_file = os.path.join(config['output'], 'final_results.txt')
         with open(results_file, 'w') as f:
             f.write(f"Method: {config['method']}\n")
