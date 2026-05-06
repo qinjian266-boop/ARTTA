@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.fft as fft
 import numpy as np
-from sklearn.metrics import roc_curve, auc, roc_auc_score ,f1_score, precision_score, recall_score# 导入 roc_auc_score
+from sklearn.metrics import roc_curve, auc, roc_auc_score ,f1_score, precision_score, recall_score
 import math
 from collections import deque
 import torchvision.transforms.functional as TF
@@ -24,7 +24,7 @@ import os
 import torch.optim as optim 
 from torch.utils.data import TensorDataset, DataLoader 
 from torch.optim.lr_scheduler import StepLR 
-import matplotlib.pyplot as plt
+
 
 class AdvFilter:
     """Core adversarial detector using adaptive thresholding and multi-feature fusion.
@@ -65,11 +65,6 @@ class AdvFilter:
         self.all_y_true = []
         self.all_y_scores = []
 
-        # --- Distribution Analysis Buffers (for Visualization) ---
-        self._pred_entropy_vals = []      # prediction entropy
-        self._grad_dir_entropy_vals = []  # gradient direction entropy
-        self._mean_spectrum_vals = []     # mean spectrum
-        self._labels_is_adv = []          # Labels (0: Benign, 1: Adv)
 
     # ===================================================================
     # Feature Extraction Methods (Core Research Components)
@@ -174,7 +169,7 @@ class AdvFilter:
         # Directional Similarity (Cosine)
         grad_directions = F.normalize(input_grads.view(input_grads.size(0), -1), p=2, dim=1)
         cosine_sim = torch.mm(grad_directions, grad_directions.t())
-        direction_scores = torch.mean(cosine_sim, dim=1)  
+        direction_scores = torch.mean(cosine_sim, dim=1)  # 平均余弦相似度
         
         # Gradient Angle Diversity
         batch_size = grad_directions.size(0)
@@ -231,20 +226,7 @@ class AdvFilter:
         # Phase 2: Score Fusion
         fusion_scores = self._get_primary_scores_from_features(primary_features_raw)
         
-        # Data persistence for distribution plotting
-        try:
-            pred_ent = primary_features_raw[0].detach().cpu().numpy()
-            grad_dir_ent = primary_features_raw[2].detach().cpu().numpy()
-            mean_spec = primary_features_raw[3].detach().cpu().numpy()
-            is_adv_cpu = is_adv.detach().cpu().numpy() if isinstance(is_adv, torch.Tensor) else np.array(is_adv)
-
-            self._pred_entropy_vals.extend(pred_ent.tolist())
-            self._grad_dir_entropy_vals.extend(grad_dir_ent.tolist())
-            self._mean_spectrum_vals.extend(mean_spec.tolist())
-            self._labels_is_adv.extend(is_adv_cpu.astype(int).tolist())
-        except Exception as e:
-            self.logger.warning(f"Telemetry recording failed: {e}")
-
+        
         # Phase 3: Adaptive Thresholding via Sliding Window
         self.score_window.extend(fusion_scores.cpu().numpy())
         window_scores = torch.tensor(list(self.score_window), device=self.device)
@@ -339,7 +321,7 @@ class AdvFilter:
             if len(np.unique(y_true)) > 1:
                 # Calculate AUROC
                 auroc_score = roc_auc_score(y_true, y_scores)
-                self.logger.info(f"检测器 AUROC: {auroc_score:.4f}")
+                self.logger.info(f"Detector AUROC: {auroc_score:.4f}")
 
                 # Calculate FPR at 95% TPR
                 fpr, tpr, thresholds = roc_curve(y_true, y_scores)
@@ -375,213 +357,3 @@ class AdvFilter:
         roc_auc = auc(fpr, tpr)
         logger.info(f"Preliminary Detector Cumulative AUC: {roc_auc:.4f}")
 
-    # ===================================================================
-    # Visualization Utilities
-    # ===================================================================
-
-
-    def plot_feature_distributions(self, output_dir='./results',
-                             dpi=600,
-                             formats=('png', 'pdf'),
-                             legend_fontsize=14,
-                             label_fontsize=16,
-                             tick_fontsize=14,
-                             title_fontsize=16,
-                             bins=60):
-        """Plot feature distributions for paper visualization."""
-        import os
-        import numpy as np
-        import matplotlib
-        matplotlib.use('Agg')
-        import matplotlib.pyplot as plt
-        from matplotlib.lines import Line2D
-        os.makedirs(output_dir, exist_ok=True)
-
-        pred   = np.array(self._pred_entropy_vals)
-        gdir   = np.array(self._grad_dir_entropy_vals)
-        mspec  = np.array(self._mean_spectrum_vals)
-        labels = np.array(self._labels_is_adv, dtype=int)
-
-        if pred.size == 0:
-            self.logger.info("No feature data collected; skip plotting.")
-            return {}
-
-        benign_mask = labels == 0
-        adv_mask    = labels == 1
-
-        def compute_stats(arr_b, arr_a):
-            rb = arr_b[~np.isnan(arr_b)]
-            ra = arr_a[~np.isnan(arr_a)]
-            mean_b = np.mean(rb) if len(rb) else np.nan
-            mean_a = np.mean(ra) if len(ra) else np.nan
-            std_b  = np.std(rb, ddof=0) if len(rb) else np.nan
-            std_a  = np.std(ra, ddof=0) if len(ra) else np.nan
-            fisher = ((mean_b - mean_a)**2) / (std_b**2 + std_a**2 + 1e-12)
-            pooled = np.sqrt(0.5 * (std_b**2 + std_a**2) + 1e-12)
-            cohens = abs(mean_b - mean_a) / (pooled + 1e-12)
-            return dict(mean_b=mean_b, mean_a=mean_a,
-                        std_b=std_b, std_a=std_a,
-                        fisher=fisher, cohens_d=cohens,
-                        n_b=len(rb), n_a=len(ra))
-
-        s_pred = compute_stats(pred[benign_mask], pred[adv_mask])
-        s_gdir = compute_stats(gdir[benign_mask], gdir[adv_mask])
-        s_msp  = compute_stats(mspec[benign_mask], mspec[adv_mask])
-
-        
-        stats_path = os.path.join(output_dir, 'feature_distribution_stats.txt')
-        with open(stats_path, 'w') as f:
-            f.write("Feature distribution statistics (benign vs adversarial)\n\n")
-            for name, s in [('prediction_entropy', s_pred),
-                            ('grad_dir_entropy', s_gdir),
-                            ('mean_spectrum', s_msp)]:
-                f.write(f"{name}:\n")
-                for k, v in s.items():
-                    f.write(f"  {k}: {v}\n")
-                f.write("\n")
-        self.logger.info(f"Feature statistics saved to: {stats_path}")
-
-        plt.rcParams.update({
-            'pdf.fonttype': 42, 'ps.fonttype': 42,
-            'font.family': 'serif',
-            'axes.labelsize': label_fontsize,
-            'axes.titlesize': title_fontsize,
-            'xtick.labelsize': tick_fontsize,
-            'ytick.labelsize': tick_fontsize,
-            'legend.fontsize': legend_fontsize,
-            'text.usetex': False,  
-        })
-
-        alpha    = 0.65
-        edge_kws = {'edgecolor': 'black', 'linewidth': 0.5}
-
-        def plot_panel(ax, data_b, data_a, s, xlabel, title,
-                    focus_main_body=False,
-                    legend_loc='upper right',
-                    show_title=False):
-            data_b = np.array(data_b, dtype=float)
-            data_a = np.array(data_a, dtype=float)
-            data_b = data_b[np.isfinite(data_b)]
-            data_a = data_a[np.isfinite(data_a)]
-
-            if data_b.size == 0:
-                ax.text(0.5, 0.5, "No benign samples", transform=ax.transAxes,
-                        ha='center', va='center', fontsize=12, alpha=0.8)
-                data_b = np.array([0.0])
-            if data_a.size == 0:
-                ax.text(0.5, 0.4, "No adversarial samples", transform=ax.transAxes,
-                        ha='center', va='center', fontsize=12, alpha=0.8)
-                data_a = np.array([0.0])
-
-            if np.isclose(data_b.max(), data_b.min()):
-                data_b += np.random.normal(scale=1e-8, size=data_b.shape)
-            if np.isclose(data_a.max(), data_a.min()):
-                data_a += np.random.normal(scale=1e-8, size=data_a.shape)
-
-            if focus_main_body:
-                low_cut  = np.percentile(np.concatenate([data_b, data_a]), 5)
-                high_cut = np.percentile(np.concatenate([data_b, data_a]), 95)
-                data_b   = data_b[(data_b >= low_cut) & (data_b <= high_cut)]
-                data_a   = data_a[(data_a >= low_cut) & (data_a <= high_cut)]
-                ax.set_xlim(low_cut, high_cut)
-
-            try:
-                h_b = ax.hist(data_b, bins=bins, density=True, alpha=alpha,
-                            label=f"Benign (n={len(data_b)})", **edge_kws)
-                h_a = ax.hist(data_a, bins=bins, density=True, alpha=alpha,
-                            label=f"Adversarial (n={len(data_a)})", **edge_kws)
-            except Exception:
-                h_b = ax.hist(data_b, bins=bins, density=False, alpha=alpha,
-                            label=f"Benign (n={len(data_b)})", **edge_kws)
-                h_a = ax.hist(data_a, bins=bins, density=False, alpha=alpha,
-                            label=f"Adversarial (n={len(data_a)})", **edge_kws)
-
-            ax.axvline(np.mean(data_b), color='blue', linestyle='--', linewidth=1.6, alpha=0.9)
-            ax.axvline(np.mean(data_a), color='red',  linestyle='--', linewidth=1.6, alpha=0.9)
-
-            ax.set_xlabel(xlabel, fontsize=label_fontsize)
-            ax.set_ylabel("Probability Density", fontsize=label_fontsize)
-
-            if show_title:
-                ax.set_title(f"{title}\n(Fisher: {s['fisher']:.3f})", fontsize=title_fontsize)
-
-            ax.grid(True, linestyle=':', linewidth=0.6)
-
-            mean_adv_label = f"Adv Mean: {np.mean(data_a):.3f}"
-            mean_ben_label = f"Benign Mean: {np.mean(data_b):.3f}"
-
-            hist_handles = []
-            if len(h_b) >= 3 and len(h_b[2]) > 0:
-                hist_handles.append(h_b[2][0])
-            if len(h_a) >= 3 and len(h_a[2]) > 0:
-                hist_handles.append(h_a[2][0])
-
-            line_adv = Line2D([0], [0], color='red',  linestyle='--', linewidth=1.6)
-            line_ben = Line2D([0], [0], color='blue', linestyle='--', linewidth=1.6)
-
-            handles = hist_handles + [line_adv, line_ben]
-            labels  = [f"Benign (n={len(data_b)})",
-                    f"Adversarial (n={len(data_a)})"] + [mean_adv_label, mean_ben_label]
-
-            leg = ax.legend(handles=handles, labels=labels, loc=legend_loc,
-                            frameon=True, fancybox=True, framealpha=0.9,
-                            edgecolor='black', fontsize=legend_fontsize)
-            leg.get_frame().set_linewidth(0.8)
-
-        saved_paths = {}
-        fig_size = (8, 6)
-
-        fig_pred, ax_pred = plt.subplots(1, 1, figsize=fig_size)
-        plot_panel(ax_pred, pred[benign_mask], pred[adv_mask], s_pred,
-                r"Uncertainty Scoring (Prediction Entropy, $S^{UN}$)", "Uncertainty Scoring",
-                legend_loc='upper right',
-                show_title=False)
-        plt.tight_layout(pad=0.1)
-        base_name_pred = 'feature_dist_pred_entropy'
-        for fmt in formats:
-            try:
-                out_path = os.path.join(output_dir, f"{base_name_pred}.{fmt}")
-                fig_pred.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0.02)
-                saved_paths[f'pred_entropy_{fmt}'] = out_path
-            except Exception as e:
-                self.logger.error(f"Failed to save {out_path}: {e}")
-        plt.close(fig_pred)
-
-
-        fig_gdir, ax_gdir = plt.subplots(1, 1, figsize=fig_size)
-        plot_panel(ax_gdir, gdir[benign_mask], gdir[adv_mask], s_gdir,
-                r"Spatial-domain Scoring (Gradient Direction Entropy, $S^{SD}$)", "Spatial-domain Scoring",
-                legend_loc='upper left',
-                show_title=False,
-                focus_main_body=True)
-        plt.tight_layout(pad=0.1)
-        base_name_gdir = 'feature_dist_grad_dir_entropy'
-        for fmt in formats:
-            try:
-                out_path = os.path.join(output_dir, f"{base_name_gdir}.{fmt}")
-                fig_gdir.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0.02)
-                saved_paths[f'grad_dir_entropy_{fmt}'] = out_path
-            except Exception as e:
-                self.logger.error(f"Failed to save {out_path}: {e}")
-        plt.close(fig_gdir)
-
-        fig_msp, ax_msp = plt.subplots(1, 1, figsize=fig_size)
-        plot_panel(ax_msp, mspec[benign_mask], mspec[adv_mask], s_msp,
-                r"Frequency Spectrum Scoring (Spectrum Mean Value, $S^{FS}$)", "Frequency Spectrum Scoring",
-                legend_loc='upper left',
-                show_title=False)
-        plt.tight_layout(pad=0.1)
-        base_name_msp = 'feature_dist_mean_spectrum'
-        for fmt in formats:
-            try:
-                out_path = os.path.join(output_dir, f"{base_name_msp}.{fmt}")
-                fig_msp.savefig(out_path, dpi=dpi, bbox_inches='tight', pad_inches=0.02)
-                saved_paths[f'mean_spectrum_{fmt}'] = out_path
-            except Exception as e:
-                self.logger.error(f"Failed to save {out_path}: {e}")
-        plt.close(fig_msp)
-
-        self.logger.info(f"All feature distribution plots saved to: {output_dir}")
-        return saved_paths
-    
-    
