@@ -158,22 +158,11 @@ We provide a unified `main.py` to evaluate the robustness of ARTTA. You can repr
 | **Attack Intensity**        | `steps`                   | Assess defense under iterative steps $N \in$ {1, 5, 10, 20}. |
 | **Coefficient Sensitivity** | `feature_weights`         | Optimize weights for Spatial (SD), Spectral (FS), and Uncertainty (UN). |
 | **Window Stability**        | `window_size`             | Verify stability across window sizes $W \in$ {5, 10, 20, 30}. |
-| **Threshold Sensitivity**   | `std_factor` ($\lambda$)  | Record metrics (AUROC, F1) as $\lambda$ varies $\in$ {0.0, 0.3, 0.6, 0.9}. |
+| **Threshold Sensitivity**   | `std_factor` ($\lambda$)  | Record metrics (AUROC, F1) as $\lambda$ varies $\in$ {0.0, 0.3, 0.6, 0.9, 1.2}. |
 | **Batch Size Robustness**   | `batch_size`              | Evaluate performance across batch sizes $\in$ {32, 64, 100, 128}. |
 
 
 
-#### 💡 Dynamic Optimization Tips:
-
-To achieve the best defensive performance under different attack ratios, we suggest following this empirical guidance for the threshold factor `std_factor` ($\lambda$):
-
-**60% Attack Ratio**: Set `std_factor` to `-0.2`.
-
-**40% Attack Ratio**: Set `std_factor` to `0.3`.
-
-**20% Attack Ratio**: Set `std_factor` to `0.9`.
-
-**10% Attack Ratio**: Set `std_factor` to `1.6`.
 
 
 
