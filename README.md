@@ -137,7 +137,7 @@ Below are the most frequently adjusted fields in `CONFIG`:
 #### 🧪 Baselines & Models
 
 - **`method`**: Choose your TTA baseline (e.g., `tent`, `eata`, `sar`, `sotta`).
-- **`model`**: Support for various backbones including `resnet50`, `resnet101`.
+- **`model`**: Support for various backbones including `resnet50`, `resnet26`.
 - **`medbn`**: Enable Robust Batch Normalization by setting `enable: True`.
 
 
